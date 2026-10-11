@@ -20,6 +20,12 @@
     -fx-border-color: -primary;
 }
 
+/* Поиск + кнопки в одной строке */
+.search-actions-row {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 12;
+}
+
 /* ComboBox-фильтр */
 .filter-select {
     -fx-background-color: -bg-card;
