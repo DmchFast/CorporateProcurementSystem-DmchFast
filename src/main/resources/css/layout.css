@@ -68,3 +68,16 @@
     -fx-text-fill: #555;
     -fx-font-size: 14px;
 }
+
+/* Заголовок страницы */
+.page-header {
+    -fx-spacing: 16;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 0 24 0;
+}
+
+.page-scroll {
+    -fx-background-color: #f0f2f5;
+    -fx-background: #f0f2f5;
+    -fx-border-color: transparent;
+}
