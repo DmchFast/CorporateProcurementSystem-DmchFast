@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.team.corporate.fx.controller.MainController"
+            stylesheets="@../css/styles.css"
+            styleClass="root-pane">
+
+    <fx:define>
+        <ToggleGroup fx:id="navToggleGroup"/>
+    </fx:define>
+
+    <!-- Верхняя навигация -->
+    <top>
+        <HBox fx:id="topBar" styleClass="top-nav" alignment="CENTER_LEFT">
+
+            <!-- Логотип -->
+            <StackPane fx:id="logoPlaceholder" styleClass="logo-placeholder"/>
+
+            <Label fx:id="appTitleLabel" text="СКЗ АРГУС" styleClass="app-title"/>
+
+            <!-- Меню навигации -->
+            <HBox fx:id="navMenu" styleClass="nav-menu">
+                <ToggleButton fx:id="myOrdersNavBtn" text="Мои заказы"
+                              styleClass="nav-item" toggleGroup="$navToggleGroup" selected="true"/>
+                <ToggleButton fx:id="servicesNavBtn" text="Сервисы"
+                              styleClass="nav-item" toggleGroup="$navToggleGroup"/>
+                <ToggleButton fx:id="statisticsNavBtn" text="Статистика"
+                              styleClass="nav-item" toggleGroup="$navToggleGroup"/>
+            </HBox>
+
+            <HBox HBox.hgrow="ALWAYS"/>
+
+            <!-- Пользователь -->
+            <HBox fx:id="userInfo" styleClass="user-info">
+                <StackPane>
+                    <Circle fx:id="avatarCircle" radius="14" styleClass="avatar-circle"/>
+                    <Label fx:id="avatarInitialLabel" text="U" styleClass="avatar-initial"/>
+                </StackPane>
+                <Label fx:id="usernameLabel" text="User" styleClass="username-label"/>
+            </HBox>
+        </HBox>
+    </top>
+
+    <center>
+        <StackPane fx:id="contentPane"/>
+    </center>
+</BorderPane>
