@@ -12,7 +12,7 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.team.corporate.fx.controller.MainController"
             stylesheets="@../css/styles.css"
-            styleClass="root-pane">
+            styleClass="root">
 
     <fx:define>
         <ToggleGroup fx:id="navToggleGroup"/>
