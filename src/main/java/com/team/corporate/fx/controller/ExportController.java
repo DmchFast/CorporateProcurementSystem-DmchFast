@@ -1,5 +1,6 @@
 package com.team.corporate.fx.controller;
 
+import com.pavlobu.emojitextflow.EmojiTextFlow;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
@@ -12,10 +13,16 @@ public class ExportController {
     @FXML private VBox exportCurrentCard;
     @FXML private VBox exportAllCard;
 
+    // Иконки-эмодзи
+    @FXML private EmojiTextFlow ordersEmoji;
+    @FXML private EmojiTextFlow statisticsEmoji;
+
     // Предупреждение
     @FXML private Label infoNote;
 
     @FXML
     public void initialize() {
+        ordersEmoji.parseAndAppend("📋");
+        statisticsEmoji.parseAndAppend("📊");
     }
 }

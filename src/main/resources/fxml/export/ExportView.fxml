@@ -7,6 +7,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import com.pavlobu.emojitextflow.EmojiTextFlow?>
 
 <ScrollPane xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -31,7 +32,7 @@
 
             <VBox fx:id="exportCurrentCard" styleClass="export-card"
                   GridPane.rowIndex="0" GridPane.columnIndex="0">
-                <Label text="📄" styleClass="export-icon"/>
+                <EmojiTextFlow fx:id="ordersEmoji" styleClass="export-emoji"/>
                 <Label text="Экспорт текущего экрана" styleClass="export-title"/>
                 <Label text="Выгрузить данные из текущей таблицы в CSV"
                        styleClass="export-desc"/>
@@ -39,14 +40,14 @@
 
             <VBox fx:id="exportAllCard" styleClass="export-card"
                   GridPane.rowIndex="0" GridPane.columnIndex="1">
-                <Label text="📊" styleClass="export-icon"/>
+                <EmojiTextFlow fx:id="statisticsEmoji" styleClass="export-emoji"/>
                 <Label text="Полный экспорт всех данных" styleClass="export-title"/>
                 <Label text="Выгрузить все таблицы системы в CSV (только MANAGER)"
                        styleClass="export-desc"/>
             </VBox>
         </GridPane>
 
-        <!-- Блок «Будет экспортировано» -->
+        <!-- Будет экспортировано -->
         <VBox styleClass="content-block">
 
             <Label text="Будет экспортировано" styleClass="info-title"/>

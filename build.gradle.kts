@@ -31,6 +31,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("com.h2database:h2:2.3.232")
+
+    implementation(files("libs/JavaFXEmojiTextFlow_twemoji-1.0.jar"))
+    implementation("org.sharegov:mjson:1.4.1")
 }
 
 javafx {
