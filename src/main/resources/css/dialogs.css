@@ -221,3 +221,11 @@
     -fx-text-fill: #ef4444;
     -fx-font-size: 12px;
 }
+
+/* Формовый диалог (высота по содержимому) */
+.dialog-root.form {
+    -fx-pref-width: 480;
+    -fx-max-width: 480;
+
+    -fx-padding: 32;
+}
