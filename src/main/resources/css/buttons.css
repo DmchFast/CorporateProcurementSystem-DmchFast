@@ -44,6 +44,13 @@
     -fx-background-color: linear-gradient(to bottom right, #b22828, #dd3c3c);
 }
 
+.btn-cancel {
+    -fx-background-color: linear-gradient(to bottom right, #aeacac, #bdbcbc);
+}
+.btn-cancel:hover {
+    -fx-background-color: linear-gradient(to bottom right, #8d8b8b, #9c9b9b);
+}
+
 .back-btn {
     -fx-min-width: 36;
     -fx-min-height: 36;
