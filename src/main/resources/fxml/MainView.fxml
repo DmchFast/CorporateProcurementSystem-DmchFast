@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
@@ -13,10 +12,6 @@
             fx:controller="com.team.corporate.fx.controller.MainController"
             stylesheets="@../css/styles.css"
             styleClass="root">
-
-    <fx:define>
-        <ToggleGroup fx:id="navToggleGroup"/>
-    </fx:define>
 
     <!-- Верхняя навигация -->
     <top>
@@ -29,12 +24,12 @@
 
             <!-- Меню навигации -->
             <HBox fx:id="navMenu" styleClass="nav-menu">
-                <ToggleButton fx:id="myOrdersNavBtn" text="Мои заказы"
-                              styleClass="nav-item" toggleGroup="$navToggleGroup" selected="true"/>
-                <ToggleButton fx:id="servicesNavBtn" text="Сервисы"
-                              styleClass="nav-item" toggleGroup="$navToggleGroup"/>
-                <ToggleButton fx:id="statisticsNavBtn" text="Статистика"
-                              styleClass="nav-item" toggleGroup="$navToggleGroup"/>
+                <Button fx:id="myOrdersNavBtn" text="Мои заказы"
+                        styleClass="nav-item, active"/>
+                <Button fx:id="servicesNavBtn" text="Сервисы"
+                        styleClass="nav-item"/>
+                <Button fx:id="statisticsNavBtn" text="Статистика"
+                        styleClass="nav-item"/>
             </HBox>
 
             <HBox HBox.hgrow="ALWAYS"/>
@@ -47,6 +42,9 @@
                 </StackPane>
                 <Label fx:id="usernameLabel" text="User" styleClass="username-label"/>
             </HBox>
+
+            <!-- Выход -->
+            <Button fx:id="logoutBtn" text="➡" styleClass="logout-btn"/>
         </HBox>
     </top>
 
