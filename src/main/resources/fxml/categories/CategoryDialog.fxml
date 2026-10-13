@@ -36,7 +36,7 @@
         <!-- Кнопки -->
         <HBox styleClass="dialog-actions">
             <Button fx:id="cancelBtn" text="Отмена" styleClass="btn, btn-cancel"/>
-            <Button fx:id="saveBtn" text="Сохранить" styleClass="btn, btn-success"/>
+            <Button fx:id="saveBtn" text="Сохранить" styleClass="btn, btn-primary"/>
         </HBox>
 
     </VBox>

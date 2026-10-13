@@ -31,7 +31,7 @@
 
         <HBox styleClass="dialog-actions, centered">
             <Button fx:id="okBtn" text="OK"
-                    styleClass="btn, btn-success"/>
+                    styleClass="btn, btn-primary"/>
         </HBox>
 
     </VBox>
