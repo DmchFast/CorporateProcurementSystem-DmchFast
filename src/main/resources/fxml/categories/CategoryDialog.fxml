@@ -13,7 +13,7 @@
            styleClass="dialog-stage"
            alignment="CENTER">
 
-    <VBox styleClass="dialog-root, form">
+    <VBox styleClass="dialog-root, form" maxHeight="-Infinity">
 
         <!-- Заголовок с крестиком -->
         <HBox styleClass="dialog-header" alignment="CENTER_LEFT">
