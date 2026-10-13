@@ -176,13 +176,19 @@
     -fx-border-color: -border-color;
     -fx-border-radius: 10;
     -fx-background-radius: 10;
-    -fx-padding: 12 16 12 16;
+    -fx-padding: 0;
     -fx-font-size: 14px;
     -fx-text-fill: -text-secondary;
     -fx-prompt-text-fill: #9ca3af;
     -fx-wrap-text: true;
 }
 .form-textarea .content {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-padding: 12 16 12 16;
+}
+.form-textarea .scroll-pane,
+.form-textarea .scroll-pane .viewport {
     -fx-background-color: transparent;
 }
 .form-textarea:focused {
