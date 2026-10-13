@@ -229,3 +229,25 @@
 
     -fx-padding: 32;
 }
+
+.dialog-status-box {
+    -fx-background-color: -bg-soft;
+    -fx-background-radius: 10;
+    -fx-padding: 14 16 14 16;
+    -fx-spacing: 6;
+}
+
+.dialog-status-caption {
+    -fx-font-size: 12px;
+    -fx-text-fill: -text-muted;
+}
+
+.dialog-status-row {
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.dialog-status-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: -text-secondary;
+}
