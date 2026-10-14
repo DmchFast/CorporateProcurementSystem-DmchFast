@@ -6,6 +6,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 
 <StackPane xmlns="http://javafx.com/javafx/25"
            xmlns:fx="http://javafx.com/fxml/1"
@@ -18,7 +20,13 @@
           maxHeight="-Infinity" maxWidth="420">
 
         <!-- Логотип -->
-        <StackPane fx:id="logoPlaceholder" styleClass="login-logo"/>
+        <StackPane fx:id="logoPlaceholder" styleClass="login-logo">
+            <ImageView fitWidth="56" fitHeight="56" preserveRatio="true" smooth="true">
+                <image>
+                    <Image url="@/images/logo.png"/>
+                </image>
+            </ImageView>
+        </StackPane>
 
         <!-- Заголовок и подзаголовок -->
         <Label text="АРГУС" styleClass="login-title"
