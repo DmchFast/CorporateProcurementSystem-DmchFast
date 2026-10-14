@@ -62,7 +62,7 @@
                         <Label fx:id="categoriesSubtitleLabel" text="Категории товаров"
                                styleClass="service-card-subtitle"/>
                     </VBox>
-                    <Label text="🔖" styleClass="service-card-emoji"
+                    <Label text="🏷" styleClass="service-card-emoji"
                            StackPane.alignment="BOTTOM_RIGHT"/>
                 </StackPane>
 

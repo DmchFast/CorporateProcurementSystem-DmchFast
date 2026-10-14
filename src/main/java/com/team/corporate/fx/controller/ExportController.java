@@ -8,21 +8,17 @@ import javafx.scene.layout.VBox;
 
 public class ExportController {
 
-    // Сетка и карточки экспорта
-    @FXML private GridPane exportGrid;
-    @FXML private VBox exportCurrentCard;
+    // Карточка полного экспорта
     @FXML private VBox exportAllCard;
 
-    // Иконки-эмодзи
-    @FXML private EmojiTextFlow ordersEmoji;
-    @FXML private EmojiTextFlow statisticsEmoji;
+    // Иконка-эмодзи
+    @FXML private EmojiTextFlow exportEmoji;
 
     // Предупреждение
     @FXML private Label infoNote;
 
     @FXML
     public void initialize() {
-        ordersEmoji.parseAndAppend("📋");
-        statisticsEmoji.parseAndAppend("📊");
+        exportEmoji.parseAndAppend("💾");
     }
 }

@@ -23,29 +23,14 @@
             <Label text="Экспорт данных" styleClass="page-title"/>
         </HBox>
 
-        <!-- Карточки экспорта -->
-        <GridPane fx:id="exportGrid" styleClass="export-grid" hgap="20">
-            <columnConstraints>
-                <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
-                <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
-            </columnConstraints>
-
-            <VBox fx:id="exportCurrentCard" styleClass="export-card"
-                  GridPane.rowIndex="0" GridPane.columnIndex="0">
-                <EmojiTextFlow fx:id="ordersEmoji" styleClass="export-emoji"/>
-                <Label text="Экспорт текущего экрана" styleClass="export-title"/>
-                <Label text="Выгрузить данные из текущей таблицы в CSV"
-                       styleClass="export-desc"/>
-            </VBox>
-
-            <VBox fx:id="exportAllCard" styleClass="export-card"
-                  GridPane.rowIndex="0" GridPane.columnIndex="1">
-                <EmojiTextFlow fx:id="statisticsEmoji" styleClass="export-emoji"/>
-                <Label text="Полный экспорт всех данных" styleClass="export-title"/>
-                <Label text="Выгрузить все таблицы системы в CSV (только MANAGER)"
-                       styleClass="export-desc"/>
-            </VBox>
-        </GridPane>
+        <!-- Карточка экспорта -->
+        <VBox fx:id="exportAllCard" styleClass="export-card"
+              maxWidth="Infinity">
+            <EmojiTextFlow fx:id="exportEmoji" styleClass="export-emoji"/>
+            <Label text="Полный экспорт всех данных" styleClass="export-title"/>
+            <Label text="Выгрузить все таблицы системы в CSV"
+                   styleClass="export-desc"/>
+        </VBox>
 
         <!-- Будет экспортировано -->
         <VBox styleClass="content-block">
@@ -104,7 +89,7 @@
             </GridPane>
 
             <Label fx:id="infoNote"
-                   text="Полный экспорт доступен только для пользователей с ролью MANAGER. Файлы будут сохранены в выбранную вами папку в формате CSV."
+                   text="Файлы будут сохранены в выбранную вами папку в формате CSV."
                    styleClass="info-note"
                    maxWidth="Infinity">
                 <VBox.margin>
