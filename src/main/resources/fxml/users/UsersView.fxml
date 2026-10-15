@@ -6,20 +6,15 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ComboBox?>
 
 <ScrollPane xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.team.corporate.fx.controller.UsersController"
             fitToWidth="true"
             styleClass="page-scroll">
-
-    <fx:define>
-        <ToggleGroup fx:id="roleTabs"/>
-    </fx:define>
 
     <VBox styleClass="page-content">
 
@@ -29,19 +24,6 @@
             <Label text="Пользователи" styleClass="page-title"/>
         </HBox>
 
-        <!-- Табы ролей -->
-        <HBox styleClass="tabs">
-            <ToggleButton fx:id="allTab" text="Все"
-                          styleClass="tab"
-                          toggleGroup="$roleTabs" selected="true"/>
-            <ToggleButton fx:id="userTab" text="USER"
-                          styleClass="tab"
-                          toggleGroup="$roleTabs"/>
-            <ToggleButton fx:id="managerTab" text="MANAGER"
-                          styleClass="tab"
-                          toggleGroup="$roleTabs"/>
-        </HBox>
-
         <!-- Поиск + кнопки действий -->
         <VBox styleClass="content-block">
 
@@ -49,6 +31,9 @@
                 <TextField fx:id="searchField" styleClass="search-input"
                            promptText="Поиск по имени пользователя..."
                            HBox.hgrow="ALWAYS"/>
+
+                <ComboBox fx:id="roleFilter" styleClass="filter-select"
+                          promptText="Все роли"/>
 
                 <HBox styleClass="action-row">
                     <Button fx:id="addBtn" text="Добавить"
