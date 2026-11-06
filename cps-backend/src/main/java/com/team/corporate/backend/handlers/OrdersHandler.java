@@ -11,6 +11,7 @@ import com.team.corporate.core.services.OrderItemsService;
 import com.team.corporate.core.services.OrdersService;
 import jakarta.validation.Valid;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -148,7 +149,7 @@ public class OrdersHandler {
                 .orElseThrow(() -> ApiException.notFound("Заказ"));
     }
 
-    private List<OrderDto> list(@NotNull OrderDto.Query query, @NotNull UUID userId) {
+    private List<OrderDto> list(@NotNull OrderDto.Query query, @Nullable UUID userId) {
         String q = normalize(query.q());
         Comparator<OrderDto> comparator = switch (query.sort()) {
             case CREATED_ASC -> Comparator.comparing(OrderDto::createdAt);
@@ -161,7 +162,7 @@ public class OrdersHandler {
             for (var item : items.getAll()) {
                 lines.computeIfAbsent(item.getOrder().getId(), ignored -> new ArrayList<>()).add(item);
             }
-            var source = orders.getAllByUser(userId);
+            var source = userId == null ? orders.getAll() : orders.getAllByUser(userId);
             return source.stream().map(order -> OrderDto.from(order, lines.getOrDefault(order.getId(), List.of())))
                     .filter(order -> contains(order.id().toString(), q) || contains(order.notes(), q))
                     .filter(order -> query.status() == null || order.status() == query.status())

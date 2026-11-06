@@ -1,6 +1,7 @@
 package com.team.corporate.backend.validation;
 
 import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.*;
@@ -14,4 +15,8 @@ public @interface TextValue {
     String message() default "Строка должна содержать не более 255 символов.";
 
     boolean required() default false;
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 }
