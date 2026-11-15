@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
     implementation(libs.spring.webmvc)
+    implementation(libs.spring.validation)
     implementation(project(":cps-core"))
     implementation(libs.jetbrains.annotations)
 
@@ -18,4 +19,11 @@ dependencies {
 
     // Database driver for PostgreSQL.
     runtimeOnly(libs.postgresql)
+
+    testImplementation(libs.spring.webmvc.test)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
