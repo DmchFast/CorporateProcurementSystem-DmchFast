@@ -274,6 +274,7 @@ class SecurityIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON).content(createJson("new-user", role, PASSWORD))).andReturn();
         assertEquals(201, result.getResponse().getStatus());
         assertEquals(role, json(result).get("role").asString());
+        assertTrue(json(result).get("enabled").asBoolean());
         assertFalse(json(result).get("createdAt").isNull());
         UUID id = UUID.fromString(json(result).get("id").asString());
         String hash = credentials.findById(id).orElseThrow().getPasswordHash();
@@ -299,6 +300,8 @@ class SecurityIntegrationTest {
             assertProblem(mvc.perform(put("/api/users/" + id + "/password").header(HttpHeaders.AUTHORIZATION, bearer(tokens))
                     .contentType(MediaType.APPLICATION_JSON).content(passwordBody(NEW_PASSWORD))).andReturn(), 403);
             assertEquals(hash, credentials.findById(id).orElseThrow().getPasswordHash());
+            assertProblem(status(tokens, id, false), 403);
+            assertTrue(users.findById(id).orElseThrow().isEnabled());
         }
     }
 
@@ -308,6 +311,92 @@ class SecurityIntegrationTest {
                 .content(createJson("forbidden", "USER", PASSWORD))).andReturn(), 401);
         assertProblem(mvc.perform(put("/api/users/" + employee.getId() + "/password")
                 .contentType(MediaType.APPLICATION_JSON).content(passwordBody(NEW_PASSWORD))).andReturn(), 401);
+        assertProblem(mvc.perform(patch("/api/users/" + employee.getId() + "/status")
+                .contentType(MediaType.APPLICATION_JSON).content("{\"enabled\":false}")).andReturn(), 401);
+    }
+
+    @Test
+    void adminDisablingAccountBlocksLoginAndRevokesAllUserSessions() throws Exception {
+        Tokens adminTokens = login("admin", PASSWORD);
+        Tokens first = login("employee", PASSWORD);
+        Tokens second = login("employee", PASSWORD);
+        Tokens otherUser = login("manager", PASSWORD);
+        String previousHash = credentials.findById(employee.getId()).orElseThrow().getPasswordHash();
+
+        MvcResult result = status(adminTokens, employee.getId(), false);
+
+        assertEquals(200, result.getResponse().getStatus());
+        assertFalse(json(result).get("enabled").asBoolean());
+        assertFalse(users.findById(employee.getId()).orElseThrow().isEnabled());
+        assertEquals(previousHash, credentials.findById(employee.getId()).orElseThrow().getPasswordHash());
+        assertProblem(loginAttempt("employee", PASSWORD), 401);
+        assertProblem(me(first), 401);
+        assertProblem(me(second), 401);
+        assertProblem(refresh(first), 401);
+        assertProblem(refresh(second), 401);
+        assertEquals(200, me(adminTokens).getResponse().getStatus());
+        assertEquals(200, me(otherUser).getResponse().getStatus());
+        MvcResult details = mvc.perform(get("/api/users/" + employee.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearer(adminTokens))).andReturn();
+        assertFalse(json(details).get("enabled").asBoolean());
+        assertNoPassword(result);
+    }
+
+    @Test
+    void resetDoesNotEnableDisabledAccountAndReenablingRequiresFreshLogin() throws Exception {
+        Tokens adminTokens = login("admin", PASSWORD);
+        Tokens old = login("employee", PASSWORD);
+        assertEquals(200, status(adminTokens, employee.getId(), false).getResponse().getStatus());
+
+        assertEquals(204, reset(adminTokens, employee.getId(), NEW_PASSWORD).getResponse().getStatus());
+        assertFalse(users.findById(employee.getId()).orElseThrow().isEnabled());
+        assertProblem(loginAttempt("employee", NEW_PASSWORD), 401);
+
+        MvcResult enabled = status(adminTokens, employee.getId(), true);
+        assertEquals(200, enabled.getResponse().getStatus());
+        assertTrue(json(enabled).get("enabled").asBoolean());
+        assertProblem(me(old), 401);
+        assertProblem(refresh(old), 401);
+        login("employee", NEW_PASSWORD);
+    }
+
+    @Test
+    void accountWithoutCredentialsCanBeDisabledBeforePasswordProvisioning() throws Exception {
+        Tokens adminTokens = login("admin", PASSWORD);
+        assertEquals(200, status(adminTokens, legacy.getId(), false).getResponse().getStatus());
+        assertFalse(credentials.existsById(legacy.getId()));
+        assertEquals(204, reset(adminTokens, legacy.getId(), PASSWORD).getResponse().getStatus());
+        assertProblem(loginAttempt("legacy", PASSWORD), 401);
+        assertEquals(200, status(adminTokens, legacy.getId(), true).getResponse().getStatus());
+        login("legacy", PASSWORD);
+    }
+
+    @Test
+    void authenticationPathsCheckDisabledFlagEvenForUnrevokedSession() throws Exception {
+        Tokens tokens = login("employee", PASSWORD);
+        UUID sessionId = UUID.fromString(decoder.decode(tokens.access()).getClaimAsString("sid"));
+        employee.setEnabled(false);
+        users.save(employee);
+        assertNull(sessions.findById(sessionId).orElseThrow().getRevokedAt());
+
+        assertProblem(me(tokens), 401);
+        assertProblem(refresh(tokens), 401);
+        assertProblem(loginAttempt("employee", PASSWORD), 401);
+        assertEquals(1, sessions.count());
+    }
+
+    @Test
+    void accountStatusRequiresBooleanAndExistingUser() throws Exception {
+        Tokens tokens = login("admin", PASSWORD);
+        for (String body : List.of("{}", "{\"enabled\":null}")) {
+            MvcResult result = mvc.perform(patch("/api/users/" + employee.getId() + "/status")
+                    .header(HttpHeaders.AUTHORIZATION, bearer(tokens)).contentType(MediaType.APPLICATION_JSON)
+                    .content(body)).andReturn();
+            assertProblem(result, 400);
+            assertEquals("enabled", json(result).get("errors").get(0).get("field").asString());
+        }
+        assertTrue(users.findById(employee.getId()).orElseThrow().isEnabled());
+        assertProblem(status(tokens, UUID.randomUUID(), false), 404);
     }
 
     @Test
@@ -447,6 +536,7 @@ class SecurityIntegrationTest {
                 () -> accounts.createUser(new CreateUserRequest("bypass", PASSWORD, UserRole.USER)));
         assertThrows(AccessDeniedException.class, () -> accounts.getUsers());
         assertThrows(AccessDeniedException.class, () -> accounts.resetPassword(employee.getId(), NEW_PASSWORD));
+        assertThrows(AccessDeniedException.class, () -> accounts.setEnabled(employee.getId(), false));
         assertThrows(AccessDeniedException.class, () -> accounts.currentUser("admin"));
     }
 
@@ -468,6 +558,10 @@ class SecurityIntegrationTest {
         assertTrue(encoder.matches(PASSWORD, hash));
         runBootstrap("first-admin", NEW_PASSWORD);
         assertEquals(hash, credentials.findById(created.getId()).orElseThrow().getPasswordHash());
+        created.setEnabled(false);
+        users.save(created);
+        runBootstrap("first-admin", PASSWORD);
+        assertFalse(users.findById(created.getId()).orElseThrow().isEnabled());
         assertThrows(IllegalStateException.class, () -> runBootstrap("manager", PASSWORD));
         assertThrows(IllegalStateException.class, () -> runBootstrap("legacy", PASSWORD));
         assertThrows(IllegalStateException.class, () -> runBootstrap("", PASSWORD));
@@ -519,6 +613,11 @@ class SecurityIntegrationTest {
     private MvcResult reset(Tokens tokens, UUID userId, String password) throws Exception {
         return mvc.perform(put("/api/users/" + userId + "/password").header(HttpHeaders.AUTHORIZATION, bearer(tokens))
                 .contentType(MediaType.APPLICATION_JSON).content(passwordBody(password))).andReturn();
+    }
+
+    private MvcResult status(Tokens tokens, UUID userId, boolean enabled) throws Exception {
+        return mvc.perform(patch("/api/users/" + userId + "/status").header(HttpHeaders.AUTHORIZATION, bearer(tokens))
+                .contentType(MediaType.APPLICATION_JSON).content(JSON.writeValueAsString(Map.of("enabled", enabled)))).andReturn();
     }
 
     private String signedToken(Tokens tokens, Consumer<Map<String, Object>> changes) {

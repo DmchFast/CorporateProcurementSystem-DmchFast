@@ -45,7 +45,8 @@ public class SessionJwtAuthenticationConverter implements Converter<Jwt, Abstrac
             var session = sessions.findWithUser(sessionId)
                     .orElseThrow(() -> new InvalidBearerTokenException("Сессия недействительна."));
             var user = session.getUser();
-            if (!session.isActive(clock.instant()) || !user.getId().equals(userId) || !credentials.existsById(userId)) {
+            if (!session.isActive(clock.instant()) || !user.isEnabled()
+                    || !user.getId().equals(userId) || !credentials.existsById(userId)) {
                 throw new InvalidBearerTokenException("Сессия недействительна.");
             }
             return new JwtAuthenticationToken(jwt,

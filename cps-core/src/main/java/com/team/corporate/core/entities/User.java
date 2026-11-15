@@ -24,6 +24,9 @@ public class User {
     @Column(name = "user_role", nullable = false)
     private UserRole userRole;
 
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled = true;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -57,6 +60,14 @@ public class User {
 
     public void setUserRole(@NotNull UserRole userRole) {
         this.userRole = EntityValidation.requireNonNull(userRole, "Роль");
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Nullable

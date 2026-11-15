@@ -1,6 +1,7 @@
 package com.team.corporate.backend.controllers;
 
 import com.team.corporate.backend.dto.CreateUserRequest;
+import com.team.corporate.backend.dto.AccountStatusRequest;
 import com.team.corporate.backend.dto.ResetPasswordRequest;
 import com.team.corporate.backend.dto.UserResponse;
 import com.team.corporate.backend.services.AccountsService;
@@ -36,6 +37,11 @@ public class UsersController {
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
         UserResponse user = accounts.createUser(request);
         return ResponseEntity.created(URI.create("/api/users/" + user.id())).body(user);
+    }
+
+    @PatchMapping("/{id}/status")
+    public UserResponse setStatus(@PathVariable("id") UUID id, @Valid @RequestBody AccountStatusRequest request) {
+        return accounts.setEnabled(id, request.enabled());
     }
 
     @PutMapping("/{id}/password")

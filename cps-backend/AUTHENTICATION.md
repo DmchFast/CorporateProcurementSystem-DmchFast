@@ -6,10 +6,10 @@ token. Spring Security's OAuth2 Resource Server validates Bearer tokens. HTTP
 sessions, form login, Basic authentication, and authentication cookies are disabled.
 All request and response bodies below are JSON.
 
-Only `ADMIN` accounts can create users, query the full user list, and reset users'
-passwords. HTTP security and `@PreAuthorize` enforce these permissions. `MANAGER`
-remains a procurement role. Users can change their own password by supplying the
-current password.
+Only `ADMIN` accounts can create users, query the full user list, reset users'
+passwords, and enable or disable accounts. HTTP security and `@PreAuthorize`
+enforce these permissions. `MANAGER` remains a procurement role. Users can change
+their own password by supplying the current password.
 
 ## Configuration
 
@@ -42,6 +42,7 @@ Provision the first administrator with `BOOTSTRAP_ADMIN_USERNAME` and
 | `GET /api/users/{id}`          | Admin Bearer token                                 | 200 user details   |
 | `POST /api/users`              | Admin Bearer token; `username`, `password`, `role` | 201                |
 | `PUT /api/users/{id}/password` | Admin Bearer token; `password`                     | 204                |
+| `PATCH /api/users/{id}/status` | Admin Bearer token; `enabled` (boolean)            | 200 user details   |
 
 A token response contains `accessToken`, `refreshToken`, `tokenType` (`Bearer`),
 `expiresIn`, and `refreshExpiresIn` (lifetimes in seconds). Send the access JWT in

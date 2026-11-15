@@ -8,6 +8,7 @@ import com.team.corporate.backend.exceptions.InvalidRefreshSessionException;
 import com.team.corporate.backend.repositories.*;
 import com.team.corporate.core.entities.User;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,7 @@ public class RefreshSessionsService {
 
     @Transactional(propagation = Propagation.MANDATORY)
     public TokenResponse open(User user) {
+        if (!user.isEnabled()) throw new DisabledException("Учётная запись отключена.");
         Instant now = clock.instant();
         RefreshSession session = sessions.saveAndFlush(new RefreshSession(user, now, now.plus(properties.refreshTtl())));
         return issue(session, user, now);
@@ -65,7 +67,7 @@ public class RefreshSessionsService {
         RefreshSession session = sessions.findForUpdate(reference.getSessionId()).orElseThrow(InvalidRefreshSessionException::new);
         RefreshToken token = tokens.findById(hash).orElseThrow(InvalidRefreshSessionException::new);
         Instant now = clock.instant();
-        if (!session.isActive(now) || !credentials.existsById(user.getId())) {
+        if (!session.isActive(now) || !user.isEnabled() || !credentials.existsById(user.getId())) {
             throw new InvalidRefreshSessionException();
         }
         if (token.getUsedAt() != null) {

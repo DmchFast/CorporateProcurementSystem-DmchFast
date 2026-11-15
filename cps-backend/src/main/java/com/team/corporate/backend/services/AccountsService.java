@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +67,19 @@ public class AccountsService {
     }
 
     @NotNull
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public UserResponse setEnabled(@NotNull UUID userId, boolean enabled) {
+        User user = users.findByIdForUpdate(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
+        boolean changed = user.isEnabled() != enabled;
+        user.setEnabled(enabled);
+        users.save(user);
+        if (changed || !enabled) sessions.revokeAll(userId);
+        return UserResponse.of(user);
+    }
+
+    @NotNull
     @PreAuthorize("isAuthenticated() and #username == authentication.name")
     @Transactional(readOnly = true)
     public UserResponse currentUser(@NotNull String username) {
@@ -78,6 +92,7 @@ public class AccountsService {
     public void changePassword(@NotNull String username, @NotNull ChangePasswordRequest request) {
         var user = users.findByUsernameForUpdate(username)
                 .orElseThrow(() -> new BadCredentialsException("Учётная запись недоступна."));
+        if (!user.isEnabled()) throw new DisabledException("Учётная запись отключена.");
         UserCredentials account = credentials.findByUsername(username)
                 .orElseThrow(() -> new BadCredentialsException("Учётная запись недоступна."));
         if (!encoder.matches(request.currentPassword(), account.getPasswordHash())) {

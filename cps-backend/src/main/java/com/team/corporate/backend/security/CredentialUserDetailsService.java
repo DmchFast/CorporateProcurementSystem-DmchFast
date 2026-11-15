@@ -23,6 +23,7 @@ public class CredentialUserDetailsService implements UserDetailsService {
         return User.withUsername(user.getUsername())
                 .password(credentials.getPasswordHash())
                 .roles(user.getUserRole().name())
+                .disabled(!user.isEnabled())
                 .build();
     }
 
