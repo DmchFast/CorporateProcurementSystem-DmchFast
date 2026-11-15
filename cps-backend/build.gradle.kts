@@ -8,6 +8,7 @@ plugins {
 dependencies {
     implementation(libs.spring.webmvc)
     implementation(libs.spring.validation)
+    implementation(libs.spring.security)
     implementation(project(":cps-core"))
     implementation(libs.jetbrains.annotations)
 
@@ -21,6 +22,8 @@ dependencies {
     runtimeOnly(libs.postgresql)
 
     testImplementation(libs.spring.webmvc.test)
+    testImplementation(libs.spring.security.test)
+    testImplementation(libs.h2database)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

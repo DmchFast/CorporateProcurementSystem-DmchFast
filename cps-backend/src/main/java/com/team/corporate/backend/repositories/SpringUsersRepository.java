@@ -14,6 +14,9 @@ import java.util.UUID;
 @Repository
 @Transactional(readOnly = true)
 public interface SpringUsersRepository extends UsersRepository, ListCrudRepository<User, UUID> {
+    @NotNull
+    Optional<User> findByUsername(@NotNull String username);
+
     @Override
     @Transactional
     @NotNull

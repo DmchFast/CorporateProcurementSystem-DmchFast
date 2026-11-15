@@ -13,20 +13,14 @@ import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.TransientDataAccessResourceException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.method.ParameterErrors;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -41,6 +35,56 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String INTERNAL_ERROR_DETAIL = "Не удалось выполнить операцию. Повторите попытку позже.";
     private static final String UNAVAILABLE_DETAIL = "Сервис временно недоступен. Повторите попытку позже.";
     private static final String VALIDATION_DETAIL = "Запрос содержит ошибки валидации.";
+
+    @NonNull
+    private static String validationMessage(@NonNull MessageSourceResolvable error) {
+        String message = error.getDefaultMessage();
+        return message == null || message.isBlank() ? "Недопустимое значение." : message;
+    }
+
+    @NonNull
+    private static String parameterName(@NonNull MethodParameter parameter) {
+        String name = null;
+        RequestParam requestParam = parameter.getParameterAnnotation(RequestParam.class);
+        PathVariable pathVariable = parameter.getParameterAnnotation(PathVariable.class);
+        RequestHeader requestHeader = parameter.getParameterAnnotation(RequestHeader.class);
+        if (requestParam != null) {
+            name = requestParam.name().isBlank() ? requestParam.value() : requestParam.name();
+        } else if (pathVariable != null) {
+            name = pathVariable.name().isBlank() ? pathVariable.value() : pathVariable.name();
+        } else if (requestHeader != null) {
+            name = requestHeader.name().isBlank() ? requestHeader.value() : requestHeader.name();
+        }
+        if (name != null && !name.isBlank()) {
+            return name;
+        }
+        name = parameter.getParameterName();
+        return name == null ? "arg" + parameter.getParameterIndex() : name;
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    @Nullable
+    public ResponseEntity<Object> handleAuthentication(
+            @NonNull AuthenticationException exception, @NonNull WebRequest request
+    ) {
+        return problem(exception, HttpStatus.UNAUTHORIZED, "Требуется вход с верным именем пользователя и паролем.", request);
+    }
+
+    @ExceptionHandler(AuthenticationServiceException.class)
+    @Nullable
+    public ResponseEntity<Object> handleAuthenticationService(
+            @NonNull AuthenticationServiceException exception, @NonNull WebRequest request
+    ) {
+        return problem(exception, HttpStatus.SERVICE_UNAVAILABLE, UNAVAILABLE_DETAIL, request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @Nullable
+    public ResponseEntity<Object> handleAccessDenied(
+            @NonNull AccessDeniedException exception, @NonNull WebRequest request
+    ) {
+        return problem(exception, HttpStatus.FORBIDDEN, "Недостаточно прав для выполнения операции.", request);
+    }
 
     @ExceptionHandler({
             CategoryNotFoundException.class,
@@ -234,32 +278,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .sorted(Comparator.comparing(ValidationError::field).thenComparing(ValidationError::message))
                 .toList());
         return handleExceptionInternal(exception, body, headers, status, request);
-    }
-
-    @NonNull
-    private static String validationMessage(@NonNull MessageSourceResolvable error) {
-        String message = error.getDefaultMessage();
-        return message == null || message.isBlank() ? "Недопустимое значение." : message;
-    }
-
-    @NonNull
-    private static String parameterName(@NonNull MethodParameter parameter) {
-        String name = null;
-        RequestParam requestParam = parameter.getParameterAnnotation(RequestParam.class);
-        PathVariable pathVariable = parameter.getParameterAnnotation(PathVariable.class);
-        RequestHeader requestHeader = parameter.getParameterAnnotation(RequestHeader.class);
-        if (requestParam != null) {
-            name = requestParam.name().isBlank() ? requestParam.value() : requestParam.name();
-        } else if (pathVariable != null) {
-            name = pathVariable.name().isBlank() ? pathVariable.value() : pathVariable.name();
-        } else if (requestHeader != null) {
-            name = requestHeader.name().isBlank() ? requestHeader.value() : requestHeader.name();
-        }
-        if (name != null && !name.isBlank()) {
-            return name;
-        }
-        name = parameter.getParameterName();
-        return name == null ? "arg" + parameter.getParameterIndex() : name;
     }
 
     public record ValidationError(@NonNull String field, @NonNull String message) {
