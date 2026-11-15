@@ -3,6 +3,7 @@ package com.team.corporate.backend.exceptions;
 import com.team.corporate.core.exceptions.*;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ElementKind;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -35,6 +36,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String INTERNAL_ERROR_DETAIL = "Не удалось выполнить операцию. Повторите попытку позже.";
     private static final String UNAVAILABLE_DETAIL = "Сервис временно недоступен. Повторите попытку позже.";
     private static final String VALIDATION_DETAIL = "Запрос содержит ошибки валидации.";
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    @Nullable
+    public ResponseEntity<Object> handleRateLimit(@NotNull RateLimitExceededException exception, @NotNull WebRequest request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.RETRY_AFTER, Long.toString(exception.getRetryAfterSeconds()));
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, exception.getMessage());
+        return handleExceptionInternal(exception, body, headers, HttpStatus.TOO_MANY_REQUESTS, request);
+    }
 
     @NonNull
     private static String validationMessage(@NonNull MessageSourceResolvable error) {

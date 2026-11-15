@@ -6,11 +6,9 @@ import com.team.corporate.backend.dto.UserResponse;
 import com.team.corporate.backend.entities.UserCredentials;
 import com.team.corporate.backend.repositories.SpringUsersRepository;
 import com.team.corporate.backend.repositories.UserCredentialsRepository;
-import com.team.corporate.backend.security.SessionRevocation.PasswordChanged;
 import com.team.corporate.core.entities.User;
 import com.team.corporate.core.exceptions.UserNotFoundException;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,18 +24,18 @@ public class AccountsService {
     private final SpringUsersRepository users;
     private final UserCredentialsRepository credentials;
     private final PasswordEncoder encoder;
-    private final ApplicationEventPublisher events;
+    private final RefreshSessionsService sessions;
 
     public AccountsService(
             @NotNull SpringUsersRepository users,
             @NotNull UserCredentialsRepository credentials,
             @NotNull PasswordEncoder encoder,
-            @NotNull ApplicationEventPublisher events
+            @NotNull RefreshSessionsService sessions
     ) {
         this.users = users;
         this.credentials = credentials;
         this.encoder = encoder;
-        this.events = events;
+        this.sessions = sessions;
     }
 
     @NotNull
@@ -78,6 +76,8 @@ public class AccountsService {
     @PreAuthorize("isAuthenticated() and #username == authentication.name")
     @Transactional
     public void changePassword(@NotNull String username, @NotNull ChangePasswordRequest request) {
+        var user = users.findByUsernameForUpdate(username)
+                .orElseThrow(() -> new BadCredentialsException("Учётная запись недоступна."));
         UserCredentials account = credentials.findByUsername(username)
                 .orElseThrow(() -> new BadCredentialsException("Учётная запись недоступна."));
         if (!encoder.matches(request.currentPassword(), account.getPasswordHash())) {
@@ -85,18 +85,19 @@ public class AccountsService {
         }
         account.setPasswordHash(encoder.encode(request.newPassword()));
         credentials.save(account);
-        events.publishEvent(new PasswordChanged(username));
+        sessions.revokeAll(user.getId());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void resetPassword(@NotNull UUID userId, @NotNull String password) {
-        User user = findUser(userId);
+        User user = users.findByIdForUpdate(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
         UserCredentials account = credentials.findById(userId)
                 .orElseGet(() -> new UserCredentials(user, ""));
         account.setPasswordHash(encoder.encode(password));
         credentials.save(account);
-        events.publishEvent(new PasswordChanged(user.getUsername()));
+        sessions.revokeAll(userId);
     }
 
     @NotNull

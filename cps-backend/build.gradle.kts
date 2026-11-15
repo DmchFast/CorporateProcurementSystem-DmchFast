@@ -9,6 +9,8 @@ dependencies {
     implementation(libs.spring.webmvc)
     implementation(libs.spring.validation)
     implementation(libs.spring.security)
+    implementation(libs.spring.security.resource.server)
+    implementation(libs.spring.security.jose)
     implementation(project(":cps-core"))
     implementation(libs.jetbrains.annotations)
 

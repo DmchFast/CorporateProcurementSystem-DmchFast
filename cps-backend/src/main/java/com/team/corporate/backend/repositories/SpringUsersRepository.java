@@ -4,6 +4,11 @@ import com.team.corporate.core.entities.User;
 import com.team.corporate.core.repositories.UsersRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +21,16 @@ import java.util.UUID;
 public interface SpringUsersRepository extends UsersRepository, ListCrudRepository<User, UUID> {
     @NotNull
     Optional<User> findByUsername(@NotNull String username);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Transactional(propagation = Propagation.MANDATORY)
+    @Query("SELECT u FROM User u WHERE u.username = :username")
+    Optional<User> findByUsernameForUpdate(@Param("username") String username);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Transactional(propagation = Propagation.MANDATORY)
+    @Query("SELECT u FROM User u WHERE u.id = :id")
+    Optional<User> findByIdForUpdate(@Param("id") UUID id);
 
     @Override
     @Transactional

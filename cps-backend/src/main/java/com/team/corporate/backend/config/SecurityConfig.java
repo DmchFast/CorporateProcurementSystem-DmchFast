@@ -6,22 +6,21 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.CredentialsExpiredException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.savedrequest.NullRequestCache;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
+import com.team.corporate.backend.security.SessionJwtAuthenticationConverter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-
-import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 @Configuration(proxyBeanMethods = false)
 @EnableMethodSecurity
@@ -42,49 +41,54 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
+    public AuthenticationManager authenticationManager(@NotNull DaoAuthenticationProvider provider) {
+        return new ProviderManager(provider);
     }
 
     @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
+    @Order(1)
+    public SecurityFilterChain authenticationEndpoints(@NotNull HttpSecurity http) {
+        return stateless(http)
+                .securityMatcher("/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
+                .build();
     }
 
     @Bean
+    @Order(2)
     public SecurityFilterChain securityFilterChain(
             @NotNull HttpSecurity http,
-            @NotNull DaoAuthenticationProvider provider,
-            @NotNull SessionRegistry sessions,
+            @NotNull SessionJwtAuthenticationConverter converter,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver errors
     ) {
-        http.authenticationProvider(provider)
+        AuthenticationEntryPoint entryPoint = (request, response, exception) -> {
+            if (!(exception instanceof AuthenticationServiceException)) {
+                response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
+            }
+            errors.resolveException(request, response, null, exception);
+        };
+        return stateless(http)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                         .requestMatchers("/api/users", "/api/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .requestCache(cache -> cache.requestCache(new NullRequestCache()))
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint((request, response, _) -> errors.resolveException(
-                                request, response, null, new InsufficientAuthenticationException("Требуется вход.")))
+                        .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler((request, response, exception) ->
                                 errors.resolveException(request, response, null, exception)))
-                .formLogin(login -> login
-                        .loginPage("/api/auth/login")
-                        .loginProcessingUrl("/api/auth/login")
-                        .successHandler((_, response, _) -> response.setStatus(NO_CONTENT.value()))
-                        .failureHandler((request, response, exception) ->
-                                errors.resolveException(request, response, null, exception))
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(NO_CONTENT)))
-                .sessionManagement(session -> session
-                        .maximumSessions(-1)
-                        .sessionRegistry(sessions)
-                        .expiredSessionStrategy(event -> errors.resolveException(
-                                event.getRequest(), event.getResponse(), null,
-                                new CredentialsExpiredException("Сессия завершена. Войдите повторно."))));
-        return http.build();
+                .oauth2ResourceServer(resource -> resource
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
+                        .authenticationEntryPoint(entryPoint)
+                        .accessDeniedHandler((request, response, exception) ->
+                                errors.resolveException(request, response, null, exception)))
+                .build();
+    }
+
+    private static HttpSecurity stateless(HttpSecurity http) {
+        return http.csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .requestCache(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     }
 }
