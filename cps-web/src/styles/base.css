@@ -66,6 +66,12 @@ h1, h2, h3 {
     min-height: calc(100vh - 60px);
 }
 
+.page-content--fixed {
+    height: calc(100vh - 60px);
+    min-height: 0;
+    overflow: hidden;
+}
+
 .page-header {
     display: flex;
     align-items: center;

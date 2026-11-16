@@ -85,7 +85,13 @@
     gap: 12px;
     align-items: center;
     flex-wrap: wrap;
-    margin-bottom: 16px;
+}
+
+/* Кнопки внутри строки фильтров — компактные, по высоте инпутов */
+.search-row .btn {
+    padding: 8px 16px;
+    height: 38px;
+    font-size: 13px;
 }
 
 .date-error-row {

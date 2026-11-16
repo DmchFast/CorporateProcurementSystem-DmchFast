@@ -42,3 +42,28 @@
 .data-table tbody tr.selected {
     background: #eff6ff;
 }
+
+/* Таблица */
+.table-container {
+    flex: 0 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.table-scroll {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg-soft);
+}

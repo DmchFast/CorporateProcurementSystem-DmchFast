@@ -193,8 +193,8 @@ export default function MyOrdersPage() {
                                 <th style={{ width: '130px' }}>Статус</th>
                                 <th style={{ width: '100px' }}>Позиций</th>
                                 <th style={{ width: '150px' }}>Обновлён</th>
-                                <th>Примечание</th>
-                                <th style={{ width: '140px', textAlign: 'right' }}>Сумма</th>
+                                <th style={{ width: '600px' }}>Примечание</th>
+                                <th style={{ width: '140px', textAlign: 'left' }}>Сумма</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -210,7 +210,7 @@ export default function MyOrdersPage() {
                                     <td>{o.itemsCount}</td>
                                     <td>{formatDateTime(o.updatedAt)}</td>
                                     <td>{o.notes || ''}</td>
-                                    <td style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                                    <td style={{ textAlign: 'left', fontVariantNumeric: 'tabular-nums' }}>
                                         {formatMoneyRub(o.total)}
                                     </td>
                                 </tr>

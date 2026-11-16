@@ -89,7 +89,7 @@ export default function UsersPage() {
     ];
 
     return (
-        <div className="page-content">
+        <div className="page-content page-content--fixed">
             <div className="page-header">
                 <button className="back-btn" onClick={() => navigate('/services')}>
                     ←
@@ -146,7 +146,7 @@ export default function UsersPage() {
                 )}
             </div>
 
-            <div className="content-block">
+            <div className="content-block  table-container">
                 {loading && (
                     <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         Загрузка...
@@ -166,7 +166,7 @@ export default function UsersPage() {
                 )}
 
                 {!loading && !error && filtered.length > 0 && (
-                    <div className="table-wrap">
+                    <div className="table-scroll">
                         <table className="data-table">
                             <thead>
                             <tr>
