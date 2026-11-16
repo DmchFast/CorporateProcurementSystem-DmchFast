@@ -26,7 +26,7 @@ export default function ServicesPage() {
         {
             title: 'Категории',
             subtitle: 'Категории товаров',
-            emoji: '🏷',
+            emoji: '🏷️',
             color: 'card-teal',
             path: '/services/categories',
         },
