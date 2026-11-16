@@ -18,8 +18,7 @@ export default function LoginPage() {
 
         try {
             await login(username, password);
-            // Пока просто редиректим на /purchases — страница появится позже
-            navigate('/purchases');
+            navigate('/my-orders');
         } catch (e) {
             setError(e.message || 'Не удалось войти');
         } finally {
@@ -28,43 +27,54 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="login-page">
+        <div className="login-root">
             <div className="login-card">
-                <h1 className="login-title">Корпоративные закупки</h1>
-                <p className="login-subtitle">Вход в систему</p>
+                <div className="login-logo">🛒</div>
+                <h1 className="login-title">АРГУС</h1>
+                <p className="login-subtitle">Корпоративная система управления закупками</p>
 
-                {error && <div className="login-error">{error}</div>}
+                <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+                    {error && <div className="login-error">{error}</div>}
 
-                <form onSubmit={handleSubmit}>
-                    <div className="login-form-field">
-                        <label htmlFor="username">Имя пользователя</label>
+                    <div className="login-form-group">
+                        <label className="login-form-label">
+                            Имя пользователя <span className="login-form-required">*</span>
+                        </label>
                         <input
-                            id="username"
+                            className="login-input"
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            required
+                            placeholder="Введите имя пользователя"
                             autoComplete="username"
                             autoFocus
                             disabled={loading}
+                            required
                         />
                     </div>
 
-                    <div className="login-form-field">
-                        <label htmlFor="password">Пароль</label>
+                    <div className="login-form-group">
+                        <label className="login-form-label">
+                            Пароль <span className="login-form-required">*</span>
+                        </label>
                         <input
-                            id="password"
+                            className="login-input"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
+                            placeholder="Введите пароль"
                             autoComplete="current-password"
                             disabled={loading}
+                            required
                         />
                     </div>
 
-                    <button type="submit" className="login-submit" disabled={loading}>
-                        {loading ? 'Вход...' : 'Войти'}
+                    <button
+                        type="submit"
+                        className="btn btn-primary login-submit-btn"
+                        disabled={loading}
+                    >
+                        {loading ? 'Вход...' : 'Войти в систему'}
                     </button>
                 </form>
             </div>
