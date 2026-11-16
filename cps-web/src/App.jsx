@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Placeholder from './components/Placeholder';
 import LoginPage from './pages/LoginPage';
 import ServicesPage from './pages/ServicesPage';
+import UsersPage from './pages/UsersPage';
 
 function Protected({ title, roles }) {
     return (
@@ -49,7 +50,13 @@ export default function App() {
                 />
                 <Route
                     path="/services/users"
-                    element={<Protected title="Пользователи" roles={['ADMIN']} />}
+                    element={
+                        <PrivateRoute roles={['ADMIN']}>
+                            <Layout>
+                                <UsersPage />
+                            </Layout>
+                        </PrivateRoute>
+                    }
                 />
 
                 {/* Смена пароля */}
