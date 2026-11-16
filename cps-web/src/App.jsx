@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import ServicesPage from './pages/ServicesPage';
 import UsersPage from './pages/UsersPage';
 import MyOrdersPage from './pages/MyOrdersPage';
+import CatalogPage from './pages/CatalogPage';
 
 function Protected({ title, roles }) {
     return (
@@ -47,7 +48,16 @@ export default function App() {
                 <Route path="/statistics" element={<Protected title="Статистика" />} />
 
                 {/* Подстраницы сервисов */}
-                <Route path="/services/catalog" element={<Protected title="Каталог товаров" />} />
+                <Route
+                    path="/services/catalog"
+                    element={
+                        <PrivateRoute>
+                            <Layout>
+                                <CatalogPage />
+                            </Layout>
+                        </PrivateRoute>
+                    }
+                />
                 <Route
                     path="/services/orders"
                     element={<Protected title="Заказы" roles={['MANAGER', 'ADMIN']} />}
