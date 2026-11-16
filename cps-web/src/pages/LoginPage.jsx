@@ -29,7 +29,9 @@ export default function LoginPage() {
     return (
         <div className="login-root">
             <div className="login-card">
-                <div className="login-logo">🛒</div>
+                <div className="login-logo">
+                    <img src="/logo.png" alt="АРГУС" />
+                </div>
                 <h1 className="login-title">АРГУС</h1>
                 <p className="login-subtitle">Корпоративная система управления закупками</p>
 

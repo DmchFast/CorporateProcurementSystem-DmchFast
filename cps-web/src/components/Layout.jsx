@@ -24,7 +24,9 @@ export default function Layout({ children }) {
     return (
         <div className="app-shell">
             <header className="top-nav">
-                <span className="logo-placeholder">🛒</span>
+                <span className="logo-placeholder">
+                    <img src="/logo.png" alt="АРГУС" />
+                </span>
                 <span className="app-title">АРГУС</span>
 
                 <nav className="nav-menu">
