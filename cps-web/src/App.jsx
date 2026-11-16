@@ -5,6 +5,7 @@ import Placeholder from './components/Placeholder';
 import LoginPage from './pages/LoginPage';
 import ServicesPage from './pages/ServicesPage';
 import UsersPage from './pages/UsersPage';
+import MyOrdersPage from './pages/MyOrdersPage';
 
 function Protected({ title, roles }) {
     return (
@@ -23,7 +24,16 @@ export default function App() {
                 <Route path="/login" element={<LoginPage />} />
 
                 {/* Главные табы */}
-                <Route path="/my-orders" element={<Protected title="Мои заказы" />} />
+                <Route
+                    path="/my-orders"
+                    element={
+                        <PrivateRoute>
+                            <Layout>
+                                <MyOrdersPage />
+                            </Layout>
+                        </PrivateRoute>
+                    }
+                />
                 <Route
                     path="/services"
                     element={
