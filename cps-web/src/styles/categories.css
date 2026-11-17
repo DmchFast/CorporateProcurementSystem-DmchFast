@@ -50,6 +50,7 @@
     justify-content: center;
     gap: 8px;
     transition: box-shadow 0.15s, transform 0.15s;
+    border: 1px solid transparent;
     color: white;
     text-align: center;
 }
@@ -61,7 +62,7 @@
 }
 
 .category-card.selected {
-    border-color: var(--primary-hover);
+    border-color: var(--primary);
 }
 
 .category-card-title {
