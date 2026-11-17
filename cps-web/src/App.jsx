@@ -7,6 +7,7 @@ import ServicesPage from './pages/ServicesPage';
 import UsersPage from './pages/UsersPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import CatalogPage from './pages/CatalogPage';
+import CategoriesPage from './pages/CategoriesPage';
 
 function Protected({ title, roles }) {
     return (
@@ -62,7 +63,16 @@ export default function App() {
                     path="/services/orders"
                     element={<Protected title="Заказы" roles={['MANAGER', 'ADMIN']} />}
                 />
-                <Route path="/services/categories" element={<Protected title="Категории" />} />
+                <Route
+                    path="/services/categories"
+                    element={
+                        <PrivateRoute>
+                            <Layout>
+                                <CategoriesPage />
+                            </Layout>
+                        </PrivateRoute>
+                    }
+                />
                 <Route path="/services/warehouses" element={<Protected title="Склады и остатки" />} />
                 <Route
                     path="/services/export"
