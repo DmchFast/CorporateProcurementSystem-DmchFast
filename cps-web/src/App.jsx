@@ -8,6 +8,7 @@ import UsersPage from './pages/UsersPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import CatalogPage from './pages/CatalogPage';
 import CategoriesPage from './pages/CategoriesPage';
+import WarehousesPage from './pages/WarehousesPage';
 
 function Protected({ title, roles }) {
     return (
@@ -73,7 +74,16 @@ export default function App() {
                         </PrivateRoute>
                     }
                 />
-                <Route path="/services/warehouses" element={<Protected title="Склады и остатки" />} />
+                <Route
+                    path="/services/warehouses"
+                    element={
+                        <PrivateRoute>
+                            <Layout>
+                                <WarehousesPage />
+                            </Layout>
+                        </PrivateRoute>
+                    }
+                />
                 <Route
                     path="/services/export"
                     element={<Protected title="Экспорт данных" roles={['MANAGER', 'ADMIN']} />}
