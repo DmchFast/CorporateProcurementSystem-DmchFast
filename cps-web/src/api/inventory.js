@@ -14,6 +14,18 @@ let mockInventory = [
 
 let seq = 8;
 
+export async function getAllInventory() {
+    if (USE_MOCKS) {
+        await new Promise((r) => setTimeout(r, 50));
+        return mockInventory.slice();
+    }
+    const response = await apiRequest('/inventory');
+    if (!response.ok) {
+        throw new Error('Не удалось загрузить инвентарь');
+    }
+    return response.json();
+}
+
 export async function getInventoryByWarehouse(warehouseId) {
     if (USE_MOCKS) {
         await new Promise((r) => setTimeout(r, 80));

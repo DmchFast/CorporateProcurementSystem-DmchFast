@@ -112,3 +112,132 @@
     justify-content: flex-end;
     margin-top: 8px;
 }
+
+.dialog-root.dialog-wide {
+    width: 640px;
+    max-width: 100%;
+}
+
+.add-line-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.add-line-row select {
+    flex: 1;
+    min-width: 0;
+}
+
+.add-line-row input[type='number'] {
+    width: 90px;
+    flex-shrink: 0;
+}
+
+/* Зелёная кнопка */
+.btn-add-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(to bottom right, #22c55e, #4eed88);
+    color: white;
+    border: none;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0 4px 0;
+}
+
+.btn-add-icon:hover:not(:disabled) {
+    background: linear-gradient(to bottom right, #1a7f42, #1eab52);
+}
+
+.btn-add-icon:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Красная кнопка-крестик для строк таблицы позиций */
+.btn-remove-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(to bottom right, #ec3030, #f55959);
+    color: white;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+}
+
+.btn-remove-icon:hover:not(:disabled) {
+    background: linear-gradient(to bottom right, #b22828, #dd3c3c);
+}
+
+.btn-remove-icon:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Компактная таблица позиций внутри диалога */
+.dialog-items-table {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.dialog-items-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.dialog-items-table thead th {
+    background: var(--bg-soft);
+    color: var(--text-muted);
+    font-weight: bold;
+    font-size: 12px;
+    text-align: left;
+    padding: 10px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dialog-items-table tbody td {
+    padding: 10px 12px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.dialog-items-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.dialog-items-table tbody tr:hover {
+    background: var(--bg-hover);
+}
+
+/* Итого */
+.dialog-total-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.dialog-total-label {
+    font-size: 15px;
+    font-weight: bold;
+    color: #059669;
+}

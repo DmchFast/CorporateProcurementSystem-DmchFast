@@ -1,4 +1,5 @@
 import { apiRequest } from './client';
+import { getAllInventory } from './inventory';
 
 const USE_MOCKS = true;
 
@@ -80,6 +81,8 @@ let mockOrders = [
     },
 ];
 
+let seq = 7;
+
 export function orderTotal(order) {
     return order.items.reduce(
         (sum, item) => sum + item.purchasePrice * item.quantity,
@@ -91,16 +94,21 @@ export function orderItemsCount(order) {
     return order.items.reduce((sum, item) => sum + item.quantity, 0);
 }
 
-export async function getMyOrders() {
+function withComputed(order) {
+    return {
+        ...order,
+        itemsCount: orderItemsCount(order),
+        total: orderTotal(order),
+    };
+}
+
+export async function getMyOrders(userId) {
     if (USE_MOCKS) {
         await new Promise((r) => setTimeout(r, 200));
-        return mockOrders.map((o) => ({
-            ...o,
-            itemsCount: orderItemsCount(o),
-            total: orderTotal(o),
-        }));
+        return mockOrders.map(withComputed);
     }
-    const response = await apiRequest('/orders?userId=me');
+    const query = userId ? '?userId=' + encodeURIComponent(userId) : '';
+    const response = await apiRequest('/orders' + query);
     if (!response.ok) {
         throw new Error('Не удалось загрузить заказы');
     }
@@ -110,15 +118,170 @@ export async function getMyOrders() {
 export async function getAllOrders() {
     if (USE_MOCKS) {
         await new Promise((r) => setTimeout(r, 200));
-        return mockOrders.map((o) => ({
-            ...o,
-            itemsCount: orderItemsCount(o),
-            total: orderTotal(o),
-        }));
+        return mockOrders.map(withComputed);
     }
     const response = await apiRequest('/orders');
     if (!response.ok) {
         throw new Error('Не удалось загрузить заказы');
+    }
+    return response.json();
+}
+
+export async function getOrder(orderId) {
+    if (USE_MOCKS) {
+        await new Promise((r) => setTimeout(r, 80));
+        const order = mockOrders.find((o) => o.id === orderId);
+        return order ? withComputed(order) : null;
+    }
+    const response = await apiRequest('/orders/' + orderId);
+    if (!response.ok) {
+        throw new Error('Заказ не найден');
+    }
+    return response.json();
+}
+
+// массив [{productId, available}]
+export async function getAvailability(editingOrderId) {
+    if (!USE_MOCKS) {
+        const url = editingOrderId
+            ? '/inventory/availability?editingOrderId=' + encodeURIComponent(editingOrderId)
+            : '/inventory/availability';
+        const response = await apiRequest(url);
+        if (!response.ok) {
+            throw new Error('Не удалось получить доступные остатки');
+        }
+        return response.json();
+    }
+
+    // физический остаток минус резервы других активных заказов
+    const { getProducts } = await import('./products');
+    const [inventory, products] = await Promise.all([getAllInventory(), getProducts()]);
+
+    const stock = {};
+    inventory.forEach((i) => {
+        stock[i.productId] = (stock[i.productId] || 0) + i.quantity;
+    });
+
+    mockOrders.forEach((o) => {
+        if (o.id === editingOrderId) return;
+        if (o.status !== 'CREATED' && o.status !== 'APPROVED') return;
+        o.items.forEach((item) => {
+            stock[item.productId] = (stock[item.productId] || 0) - item.quantity;
+        });
+    });
+
+    return products.map((p) => ({
+        productId: p.id,
+        available: Math.max(0, stock[p.id] || 0),
+    }));
+}
+
+export async function createOrder(userId, items, notes, usernameHint) {
+    if (USE_MOCKS) {
+        await new Promise((r) => setTimeout(r, 200));
+        if (!items || items.length === 0) {
+            throw new Error('Добавьте хотя бы один товар');
+        }
+
+        const { getProducts } = await import('./products');
+        const products = await getProducts();
+        const productById = {};
+        products.forEach((p) => { productById[p.id] = p; });
+
+        const orderItems = items.map((it) => {
+            const p = productById[it.productId];
+            if (!p) throw new Error('Товар не найден');
+            return {
+                productId: p.id,
+                productName: p.name,
+                sku: p.sku,
+                quantity: it.quantity,
+                purchasePrice: p.price,
+            };
+        });
+
+        const now = new Date().toISOString();
+        const id = 'a1b2c3d4-' + String(seq).padStart(4, '0') + '-4000-8000-000000000001';
+        seq += 1;
+
+        const created = {
+            id,
+            userId,
+            username: usernameHint || '(вы)',
+            status: 'CREATED',
+            notes: notes || null,
+            createdAt: now,
+            updatedAt: now,
+            items: orderItems,
+        };
+        mockOrders = [...mockOrders, created];
+        return withComputed(created);
+    }
+
+    const response = await apiRequest('/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+            userId,
+            items: items.map((it) => ({ productId: it.productId, quantity: it.quantity })),
+            notes: notes || null,
+        }),
+    });
+    if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.detail || 'Не удалось создать заказ');
+    }
+    return response.json();
+}
+
+export async function updateOrder(orderId, userId, items, notes) {
+    if (USE_MOCKS) {
+        await new Promise((r) => setTimeout(r, 200));
+        const order = mockOrders.find((o) => o.id === orderId);
+        if (!order) throw new Error('Заказ не найден');
+        if (order.status !== 'CREATED') {
+            throw new Error('Можно редактировать только созданный заказ');
+        }
+        if (!items || items.length === 0) {
+            throw new Error('В заказе должна остаться хотя бы одна позиция');
+        }
+
+        const { getProducts } = await import('./products');
+        const products = await getProducts();
+        const productById = {};
+        products.forEach((p) => { productById[p.id] = p; });
+
+        const orderItems = items.map((it) => {
+            const p = productById[it.productId];
+            if (!p) throw new Error('Товар не найден');
+            const existing = order.items.find((i) => i.productId === it.productId);
+            return {
+                productId: p.id,
+                productName: p.name,
+                sku: p.sku,
+                quantity: it.quantity,
+                purchasePrice: existing ? existing.purchasePrice : p.price,
+            };
+        });
+
+        mockOrders = mockOrders.map((o) =>
+            o.id === orderId
+                ? { ...o, items: orderItems, notes: notes || null, updatedAt: new Date().toISOString() }
+                : o
+        );
+        return;
+    }
+
+    const response = await apiRequest('/orders/' + orderId, {
+        method: 'PUT',
+        body: JSON.stringify({
+            userId,
+            items: items.map((it) => ({ productId: it.productId, quantity: it.quantity })),
+            notes: notes || null,
+        }),
+    });
+    if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.detail || 'Не удалось сохранить заказ');
     }
     return response.json();
 }
@@ -128,13 +291,8 @@ export async function updateOrderNotes(orderId, notes, userId) {
         await new Promise((r) => setTimeout(r, 150));
         const order = mockOrders.find((o) => o.id === orderId);
         if (!order) throw new Error('Заказ не найден');
-        if (order.userId !== userId) {
-            throw new Error('Можно редактировать только свои заказы');
-        }
         mockOrders = mockOrders.map((o) =>
-            o.id === orderId
-                ? { ...o, notes, updatedAt: new Date().toISOString() }
-                : o
+            o.id === orderId ? { ...o, notes, updatedAt: new Date().toISOString() } : o
         );
         return;
     }
@@ -157,9 +315,7 @@ export async function changeOrderStatus(orderId, status, managerId) {
             throw new Error('Доставленный заказ нельзя перевести в другой статус');
         }
         mockOrders = mockOrders.map((o) =>
-            o.id === orderId
-                ? { ...o, status, updatedAt: new Date().toISOString() }
-                : o
+            o.id === orderId ? { ...o, status, updatedAt: new Date().toISOString() } : o
         );
         return;
     }

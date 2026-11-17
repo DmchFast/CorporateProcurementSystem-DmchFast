@@ -7,6 +7,7 @@ import { formatDateTime, formatMoneyRub, formatMoney } from '../utils/format';
 import OrderNotesDialog from '../components/dialogs/OrderNotesDialog';
 import OrderStatusDialog from '../components/dialogs/OrderStatusDialog';
 import ConfirmDeleteDialog from '../components/dialogs/ConfirmDeleteDialog';
+import OrderEditorDialog from '../components/dialogs/OrderEditorDialog';
 
 const SORT_MODES = [
     { key: 'CREATED_DESC', label: 'Сначала новые' },
@@ -41,6 +42,9 @@ export default function OrdersPage() {
     const [showDelete, setShowDelete] = useState(false);
     const [actionError, setActionError] = useState('');
     const [infoMessage, setInfoMessage] = useState('');
+
+    const [showEditor, setShowEditor] = useState(false);
+    const [editingOrder, setEditingOrder] = useState(null);
 
     async function load() {
         setLoading(true);
@@ -128,6 +132,17 @@ export default function OrdersPage() {
         setShowNotes(true);
     }
 
+    function handleOpenFullEdit() {
+        setActionError('');
+        if (!selected) return;
+        if (selected.status !== 'CREATED') {
+            setActionError('Редактировать можно только созданный заказ');
+            return;
+        }
+        setEditingOrder(selected);
+        setShowEditor(true);
+    }
+
     function handleOpenStatus() {
         setActionError('');
         if (selected.status === 'DELIVERED') {
@@ -160,8 +175,8 @@ export default function OrdersPage() {
     }
 
     function handleCreateClick() {
-        setInfoMessage('Скоро');
-        setTimeout(() => setInfoMessage(''), 4000);
+        setEditingOrder(null);
+        setShowEditor(true);
     }
 
     function singlePrice(order) {
@@ -254,6 +269,14 @@ export default function OrdersPage() {
                 <div className="action-row" style={{ marginTop: 16 }}>
                     <button className="btn btn-create" onClick={handleCreateClick}>
                         Создать заказ
+                    </button>
+                    <button
+                        className="btn btn-edit"
+                        onClick={handleOpenFullEdit}
+                        disabled={!selected}
+                        title="Редактировать состав заказа"
+                    >
+                        Редактировать
                     </button>
                     <button
                         className="btn btn-edit"
@@ -374,6 +397,22 @@ export default function OrdersPage() {
                     entityName={`Заказ ${shortId(selected.id)}`}
                     onCancel={() => setShowDelete(false)}
                     onConfirm={handleDelete}
+                />
+            )}
+
+            {showEditor && (
+                <OrderEditorDialog
+                    order={editingOrder}
+                    currentUser={user}
+                    onClose={() => {
+                        setShowEditor(false);
+                        setEditingOrder(null);
+                    }}
+                    onSaved={() => {
+                        setShowEditor(false);
+                        setEditingOrder(null);
+                        load();
+                    }}
                 />
             )}
         </div>
