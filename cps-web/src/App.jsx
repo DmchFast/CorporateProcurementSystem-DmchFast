@@ -9,6 +9,7 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import CatalogPage from './pages/CatalogPage';
 import CategoriesPage from './pages/CategoriesPage';
 import WarehousesPage from './pages/WarehousesPage';
+import ExportPage from './pages/ExportPage';
 
 function Protected({ title, roles }) {
     return (
@@ -86,7 +87,13 @@ export default function App() {
                 />
                 <Route
                     path="/services/export"
-                    element={<Protected title="Экспорт данных" roles={['MANAGER', 'ADMIN']} />}
+                    element={
+                        <PrivateRoute roles={['MANAGER', 'ADMIN']}>
+                            <Layout>
+                                <ExportPage />
+                            </Layout>
+                        </PrivateRoute>
+                    }
                 />
                 <Route
                     path="/services/users"
