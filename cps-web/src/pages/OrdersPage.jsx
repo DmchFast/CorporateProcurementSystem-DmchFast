@@ -23,26 +23,21 @@ function shortId(id) {
 export default function OrdersPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
-
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [userFilter, setUserFilter] = useState('');
     const [priceFrom, setPriceFrom] = useState('');
     const [priceTo, setPriceTo] = useState('');
     const [sortMode, setSortMode] = useState('CREATED_DESC');
-
     const [selectedId, setSelectedId] = useState(null);
-
     const [showNotes, setShowNotes] = useState(false);
     const [showStatus, setShowStatus] = useState(false);
     const [showDelete, setShowDelete] = useState(false);
     const [actionError, setActionError] = useState('');
     const [infoMessage, setInfoMessage] = useState('');
-
     const [showEditor, setShowEditor] = useState(false);
     const [editingOrder, setEditingOrder] = useState(null);
 
@@ -78,7 +73,6 @@ export default function OrdersPage() {
 
     const filtered = useMemo(() => {
         let list = orders.slice();
-
         const q = search.trim().toLowerCase();
         if (q) {
             list = list.filter((o) => {
@@ -87,14 +81,12 @@ export default function OrdersPage() {
                 return idMatch || notesMatch;
             });
         }
-
         if (status) {
             list = list.filter((o) => o.status === status);
         }
         if (userFilter) {
             list = list.filter((o) => o.userId === userFilter);
         }
-
         const fromNum = priceFrom ? Number(priceFrom.replace(',', '.')) : null;
         if (fromNum != null && !isNaN(fromNum)) {
             list = list.filter((o) => o.total >= fromNum);
@@ -103,7 +95,6 @@ export default function OrdersPage() {
         if (toNum != null && !isNaN(toNum)) {
             list = list.filter((o) => o.total <= toNum);
         }
-
         list.sort((a, b) => {
             switch (sortMode) {
                 case 'CREATED_ASC':
@@ -117,7 +108,6 @@ export default function OrdersPage() {
                     return new Date(b.createdAt) - new Date(a.createdAt);
             }
         });
-
         return list;
     }, [orders, search, status, userFilter, priceFrom, priceTo, sortMode]);
 
@@ -145,6 +135,7 @@ export default function OrdersPage() {
 
     function handleOpenStatus() {
         setActionError('');
+        if (!selected) return;
         if (selected.status === 'DELIVERED') {
             setActionError('Доставленный заказ нельзя перевести в другой статус');
             return;
@@ -192,7 +183,6 @@ export default function OrdersPage() {
                 </button>
                 <h1 className="page-title">Заказы</h1>
             </div>
-
             {infoMessage && (
                 <div
                     style={{
@@ -207,7 +197,6 @@ export default function OrdersPage() {
                     {infoMessage}
                 </div>
             )}
-
             <div className="content-block">
                 <div className="search-row">
                     <input
@@ -265,7 +254,6 @@ export default function OrdersPage() {
                         ))}
                     </select>
                 </div>
-
                 <div className="action-row" style={{ marginTop: 16 }}>
                     <button className="btn btn-create" onClick={handleCreateClick}>
                         Создать заказ
@@ -288,7 +276,8 @@ export default function OrdersPage() {
                     <button
                         className="btn btn-warning"
                         onClick={handleOpenStatus}
-                        disabled={!selected}
+                        disabled={!selected || selected.status === 'DELIVERED'}
+                        title={selected?.status === 'DELIVERED' ? 'Доставленный заказ нельзя изменить' : ''}
                     >
                         Сменить статус
                     </button>
@@ -300,33 +289,28 @@ export default function OrdersPage() {
                         Удалить
                     </button>
                 </div>
-
                 {actionError && (
                     <div className="form-error" style={{ marginTop: 10 }}>
                         {actionError}
                     </div>
                 )}
             </div>
-
             <div className="content-block table-container">
                 {loading && (
                     <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         Загрузка...
                     </div>
                 )}
-
                 {!loading && error && (
                     <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--danger)' }}>
                         {error}
                     </div>
                 )}
-
                 {!loading && !error && filtered.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
                         Заказы не найдены
                     </div>
                 )}
-
                 {!loading && !error && filtered.length > 0 && (
                     <div className="table-scroll">
                         <table className="data-table">
@@ -352,9 +336,9 @@ export default function OrdersPage() {
                                     <td style={{ fontFamily: 'monospace' }}>{shortId(o.id)}</td>
                                     <td>{o.username}</td>
                                     <td>
-                                            <span className={'status ' + statusCss(o.status)}>
-                                                {statusLabel(o.status)}
-                                            </span>
+                                        <span className={'status ' + statusCss(o.status)}>
+                                            {statusLabel(o.status)}
+                                        </span>
                                     </td>
                                     <td>{formatDateTime(o.createdAt)}</td>
                                     <td style={{ textAlign: 'right' }}>{o.itemsCount}</td>
@@ -372,7 +356,6 @@ export default function OrdersPage() {
                     </div>
                 )}
             </div>
-
             {showNotes && selected && (
                 <OrderNotesDialog
                     order={selected}
@@ -381,7 +364,6 @@ export default function OrdersPage() {
                     onSaved={handleSaved}
                 />
             )}
-
             {showStatus && selected && (
                 <OrderStatusDialog
                     order={selected}
@@ -390,7 +372,6 @@ export default function OrdersPage() {
                     onSaved={handleSaved}
                 />
             )}
-
             {showDelete && selected && (
                 <ConfirmDeleteDialog
                     title="Удаление заказа"
@@ -399,7 +380,6 @@ export default function OrdersPage() {
                     onConfirm={handleDelete}
                 />
             )}
-
             {showEditor && (
                 <OrderEditorDialog
                     order={editingOrder}
