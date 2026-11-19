@@ -122,6 +122,9 @@ export default function App() {
                         </PrivateRoute>
                     }
                 />
+
+                <Route path="/" element={<Navigate to="/my-orders" replace />} />
+                <Route path="*" element={<Navigate to="/my-orders" replace />} />
             </Routes>
         </BrowserRouter>
     );
