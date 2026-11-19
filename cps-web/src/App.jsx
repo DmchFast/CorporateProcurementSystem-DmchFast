@@ -11,6 +11,7 @@ import CategoriesPage from './pages/CategoriesPage';
 import WarehousesPage from './pages/WarehousesPage';
 import ExportPage from './pages/ExportPage';
 import OrdersPage from './pages/OrdersPage';
+import StatisticsPage from './pages/StatisticsPage';
 
 function Protected({ title, roles }) {
     return (
@@ -49,7 +50,16 @@ export default function App() {
                         </PrivateRoute>
                     }
                 />
-                <Route path="/statistics" element={<Protected title="Статистика" />} />
+                <Route
+                    path="/statistics"
+                    element={
+                        <PrivateRoute>
+                            <Layout>
+                                <StatisticsPage />
+                            </Layout>
+                        </PrivateRoute>
+                    }
+                />
 
                 {/* Подстраницы сервисов */}
                 <Route
@@ -112,12 +122,6 @@ export default function App() {
                         </PrivateRoute>
                     }
                 />
-
-                {/* Смена пароля */}
-                <Route path="/change-password" element={<Protected title="Смена пароля" />} />
-
-                <Route path="/" element={<Navigate to="/my-orders" replace />} />
-                <Route path="*" element={<Navigate to="/my-orders" replace />} />
             </Routes>
         </BrowserRouter>
     );
